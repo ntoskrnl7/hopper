@@ -1,7 +1,7 @@
-use sender;
 use deque;
-use std::{cmp, fs, io};
+use sender;
 use std::path::Path;
+use std::{cmp, fs, io};
 
 #[derive(Debug)]
 pub enum Placement<T> {
@@ -55,6 +55,13 @@ pub fn clear_directory(data_dir: &Path) -> io::Result<()> {
     if data_dir.is_dir() {
         for directory_entry in fs::read_dir(data_dir)? {
             let de = directory_entry?;
+            if let Ok(meta) = fs::metadata(de.path()) {
+                let mut perms = meta.permissions();
+                if perms.readonly() {
+                    perms.set_readonly(false);
+                    fs::set_permissions(de.path(), perms)?;
+                }
+            }
             fs::remove_file(de.path())?
         }
     }

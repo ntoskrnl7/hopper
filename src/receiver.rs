@@ -104,6 +104,15 @@ where
                                 match private::read_seq_num_min(&self.root) {
                                     Ok(seq_num) => {
                                         let old_log = self.root.join(format!("{}", seq_num));
+
+                                        if let Ok(meta) = fs::metadata(old_log.as_path()) {
+                                            let mut perms = meta.permissions();
+                                            if perms.readonly() {
+                                                perms.set_readonly(false);
+                                                let _ =
+                                                    fs::set_permissions(old_log.as_path(), perms);
+                                            }
+                                        }
                                         fs::remove_file(old_log).expect("could not remove log");
                                         self.max_disk_files.fetch_add(1, Ordering::Relaxed);
                                         let lg =

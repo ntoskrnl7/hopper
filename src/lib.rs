@@ -602,5 +602,4 @@ mod test {
         }
         QuickCheck::new().quickcheck(inner as fn(usize, usize, usize, usize) -> TestResult);
     }
-
 }
